@@ -324,7 +324,13 @@ impl Subscriptions {
             // TODO unwrap logic needs to change
              println!("log 1");
             println!("reques_timestamp: {:?}", request_timestamp);
-            let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();
+            //let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();
+            if let Ok(signed_duration_since) = now.signed_duration_since(request_timestamp).to_std() {
+            // Usa `signed_duration_since` aquí
+            } else {
+            println!("Warning: The calculated duration is negative or out of range");
+            // Puedes tomar alguna acción alternativa aquí si es necesario
+            }
             println!("log 2");
             println!("duration: {:?}", signed_duration_since);
             if signed_duration_since > publish_request_timeout {
