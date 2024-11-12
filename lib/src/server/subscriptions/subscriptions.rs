@@ -326,11 +326,6 @@ impl Subscriptions {
             println!("reques_timestamp: {:?}", request_timestamp);
             //let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();
             if let Ok(signed_duration_since) = now.signed_duration_since(request_timestamp).to_std() {
-            // Usa `signed_duration_since` aquí
-            } else {
-            println!("Warning: The calculated duration is negative or out of range");
-            // Puedes tomar alguna acción alternativa aquí si es necesario
-            }
             println!("log 2");
             println!("duration: {:?}", signed_duration_since);
             if signed_duration_since > publish_request_timeout {
@@ -345,6 +340,23 @@ impl Subscriptions {
             } else {
                 true
             }
+            if signed_duration_since > publish_request_timeout {
+                debug!("Publish request {} has expired - timestamp = {:?}, expiration hint = {}, publish timeout = {:?}, time now = {:?}, ", request_header.request_handle, request_timestamp, request_timestamp, publish_request_timeout, now);
+                expired_publish_responses.push_front(PublishResponseEntry {
+                    request_id: request.request_id,
+                    response: ServiceFault {
+                        response_header: ResponseHeader::new_timestamped_service_result(DateTime::now(), &request.request.request_header, StatusCode::BadTimeout),
+                    }.into(),
+                });
+                false
+            } else {
+                true
+            }
+            } else {
+            println!("Warning: The calculated duration is negative or out of range");
+            // Puedes tomar alguna acción alternativa aquí si es necesario
+            }
+            
         });
         // Queue responses for each expired request
         self.publish_response_queue
