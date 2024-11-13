@@ -312,44 +312,40 @@ impl Subscriptions {
         let mut expired_publish_responses =
             VecDeque::with_capacity(self.publish_request_queue.len());
 
-        const MARGIN_OF_ERROR_MS: u64 = 500; 
+        
 
         self.publish_request_queue.retain(|request| {
             let request_header = &request.request.request_header;
-            let request_timestamp: DateTimeUtc = request_header.timestamp.into();           
-            let adjusted_timeout = (Duration::from_millis(publish_request_timeout as u64) + Duration::from_millis(MARGIN_OF_ERROR_MS)).as_millis() as u64;
+            let request_timestamp: DateTimeUtc = request_header.timestamp.into();
 
+             let current_time = now.time();
+             let request_time = request_timestamp.time();
+
+            println!(
+        "Hora actual (now): {:?}, Hora del request: {:?}",
+        current_time, request_time
+    );
+            
             let publish_request_timeout = Duration::from_millis(if request_header.timeout_hint > 0 && (request_header.timeout_hint as i64) < publish_request_timeout {
                 request_header.timeout_hint as u64
             } else {
-                adjusted_timeout
+                publish_request_timeout as u64
             });
             // The request has timed out if the timestamp plus hint exceeds the input time
             // TODO unwrap logic needs to change
-            println!("log 1");
-            println!("reques_timestamp: {:?}", request_timestamp);
-            //let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();
-            if let Ok(signed_duration_since) = now.signed_duration_since(request_timestamp).to_std() {
-                println!("log 2");
-                println!("duration: {:?}", signed_duration_since);           
-                if signed_duration_since > publish_request_timeout {
-                     println!("log 3");
-                    debug!("Publish request {} has expired - timestamp = {:?}, expiration hint = {}, publish timeout = {:?}, time now = {:?}, ", request_header.request_handle, request_timestamp, request_timestamp, publish_request_timeout, now);
-                    expired_publish_responses.push_front(PublishResponseEntry {
-                        request_id: request.request_id,
-                        response: ServiceFault {
-                            response_header: ResponseHeader::new_timestamped_service_result(DateTime::now(), &request.request.request_header, StatusCode::BadTimeout),
-                        }.into(),
-                    });
-                    false
-                } else {
-                    true
-                }
-                } else {
-                println!("Warning: The calculated duration is negative or out of range");
+           let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();
+            if signed_duration_since > publish_request_timeout {
+                debug!("Publish request {} has expired - timestamp = {:?}, expiration hint = {}, publish timeout = {:?}, time now = {:?}, ", request_header.request_handle, request_timestamp, request_timestamp, publish_request_timeout, now);
+                expired_publish_responses.push_front(PublishResponseEntry {
+                    request_id: request.request_id,
+                    response: ServiceFault {
+                        response_header: ResponseHeader::new_timestamped_service_result(DateTime::now(), &request.request.request_header, StatusCode::BadTimeout),
+                    }.into(),
+                });
+                false
+            } else {
                 true
-                // Puedes tomar alguna acción alternativa aquí si es necesario
-                }
+            }
             
         });
         // Queue responses for each expired request
