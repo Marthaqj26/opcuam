@@ -335,26 +335,20 @@ impl Subscriptions {
             println!("publish_request timeout: {:?}", publish_request_timeout);
             // The request has timed out if the timestamp plus hint exceeds the input time
             // TODO unwrap logic needs to change
-          // let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();
-
-            if let Ok(signed_duration_since) = now.signed_duration_since(request_timestamp).to_std() {
-                println!("singed_duratin_since: {:?}", signed_duration_since);
-                if signed_duration_since > publish_request_timeout {
-                        debug!("Publish request {} has expired - timestamp = {:?}, expiration hint = {}, publish timeout = {:?}, time now = {:?}, ", request_header.request_handle, request_timestamp, request_timestamp, publish_request_timeout, now);
-                        expired_publish_responses.push_front(PublishResponseEntry {
-                            request_id: request.request_id,
-                            response: ServiceFault {
-                                response_header: ResponseHeader::new_timestamped_service_result(DateTime::now(), &request.request.request_header, StatusCode::BadTimeout),
-                            }.into(),
-                        });
-                        false
-                    } else {
-                        true
-                    }
-                } else {                    
-                    println!("El request_timestamp es mayor que now, ignorando la solicitud.");
-                    true
-                }
+           let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();           
+             println!("singed_duratin_since: {:?}", signed_duration_since);
+               if signed_duration_since > publish_request_timeout {
+                debug!("Publish request {} has expired - timestamp = {:?}, expiration hint = {}, publish timeout = {:?}, time now = {:?}, ", request_header.request_handle, request_timestamp, request_timestamp, publish_request_timeout, now);
+                expired_publish_responses.push_front(PublishResponseEntry {
+                    request_id: request.request_id,
+                    response: ServiceFault {
+                        response_header: ResponseHeader::new_timestamped_service_result(DateTime::now(), &request.request.request_header, StatusCode::BadTimeout),
+                    }.into(),
+                });
+                false
+            } else {
+                true
+            }
            
             
         });
