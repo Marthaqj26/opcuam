@@ -312,17 +312,20 @@ impl Subscriptions {
         let mut expired_publish_responses =
             VecDeque::with_capacity(self.publish_request_queue.len());
 
+        const MARGIN_OF_ERROR_MS: u64 = 500; 
+
         self.publish_request_queue.retain(|request| {
             let request_header = &request.request.request_header;
             let request_timestamp: DateTimeUtc = request_header.timestamp.into();
+            let adjusted_timeout = publish_request_timeout + Duration::from_millis(MARGIN_OF_ERROR_MS);
             let publish_request_timeout = Duration::from_millis(if request_header.timeout_hint > 0 && (request_header.timeout_hint as i64) < publish_request_timeout {
                 request_header.timeout_hint as u64
             } else {
-                publish_request_timeout as u64
+                adjusted_timeout as u64
             });
             // The request has timed out if the timestamp plus hint exceeds the input time
             // TODO unwrap logic needs to change
-             println!("log 1");
+            println!("log 1");
             println!("reques_timestamp: {:?}", request_timestamp);
             //let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();
             if let Ok(signed_duration_since) = now.signed_duration_since(request_timestamp).to_std() {
