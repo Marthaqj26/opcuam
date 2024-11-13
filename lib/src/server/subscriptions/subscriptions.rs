@@ -322,7 +322,7 @@ impl Subscriptions {
             let publish_request_timeout = Duration::from_millis(if request_header.timeout_hint > 0 && (request_header.timeout_hint as i64) < publish_request_timeout {
                 request_header.timeout_hint as u64
             } else {
-                adjusted_timeout as u64
+                adjusted_timeout
             });
             // The request has timed out if the timestamp plus hint exceeds the input time
             // TODO unwrap logic needs to change
