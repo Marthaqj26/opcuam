@@ -317,7 +317,7 @@ impl Subscriptions {
         self.publish_request_queue.retain(|request| {
             let request_header = &request.request.request_header;
             let request_timestamp: DateTimeUtc = request_header.timestamp.into();           
-            let adjusted_timeout = Duration::from_millis(publish_request_timeout as u64) + Duration::from_millis(MARGIN_OF_ERROR_MS);
+            let adjusted_timeout = (Duration::from_millis(publish_request_timeout as u64) + Duration::from_millis(MARGIN_OF_ERROR_MS)).as_millis() as u64;
 
             let publish_request_timeout = Duration::from_millis(if request_header.timeout_hint > 0 && (request_header.timeout_hint as i64) < publish_request_timeout {
                 request_header.timeout_hint as u64
