@@ -316,8 +316,9 @@ impl Subscriptions {
 
         self.publish_request_queue.retain(|request| {
             let request_header = &request.request.request_header;
-            let request_timestamp: DateTimeUtc = request_header.timestamp.into();
-            let adjusted_timeout = publish_request_timeout + Duration::from_millis(MARGIN_OF_ERROR_MS);
+            let request_timestamp: DateTimeUtc = request_header.timestamp.into();           
+            let adjusted_timeout = Duration::from_millis(publish_request_timeout as u64) + Duration::from_millis(MARGIN_OF_ERROR_MS);
+
             let publish_request_timeout = Duration::from_millis(if request_header.timeout_hint > 0 && (request_header.timeout_hint as i64) < publish_request_timeout {
                 request_header.timeout_hint as u64
             } else {
@@ -332,6 +333,7 @@ impl Subscriptions {
                 println!("log 2");
                 println!("duration: {:?}", signed_duration_since);           
                 if signed_duration_since > publish_request_timeout {
+                     println!("log 3");
                     debug!("Publish request {} has expired - timestamp = {:?}, expiration hint = {}, publish timeout = {:?}, time now = {:?}, ", request_header.request_handle, request_timestamp, request_timestamp, publish_request_timeout, now);
                     expired_publish_responses.push_front(PublishResponseEntry {
                         request_id: request.request_id,
