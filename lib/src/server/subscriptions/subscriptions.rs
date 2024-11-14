@@ -338,11 +338,13 @@ impl Subscriptions {
            //let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();  
 
             let max_tolerance = Duration::from_secs(5);
-            let signed_duration_since = now.signed_duration_since(request_timestamp)
-            .unwrap_or_else(|_| max_tolerance);
+           let signed_duration_since = match now.signed_duration_since(request_timestamp).to_std() {
+                Ok(duration) => duration,
+                Err(_) => max_tolerance,
+            };
             
              println!("singed_duratin_since: {:?}", signed_duration_since);
-               if signed_duration_since > publish_request_timeout {
+               if signed_duration_since > publish_request_timeout + max_tolerance {
                 debug!("Publish request {} has expired - timestamp = {:?}, expiration hint = {}, publish timeout = {:?}, time now = {:?}, ", request_header.request_handle, request_timestamp, request_timestamp, publish_request_timeout, now);
                 expired_publish_responses.push_front(PublishResponseEntry {
                     request_id: request.request_id,
