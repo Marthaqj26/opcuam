@@ -335,8 +335,8 @@ impl Subscriptions {
             println!("publish_request timeout: {:?}", publish_request_timeout);
             // The request has timed out if the timestamp plus hint exceeds the input time
             // TODO unwrap logic needs to change
-           //let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap_or(Duration::from_secs(0));  
-            let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();  
+           let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap_or(Duration::from_secs(0));  
+            //let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();  
 
            // let max_tolerance = Duration::from_secs(5);
            //let signed_duration_since = match now.signed_duration_since(request_timestamp).to_std() {
