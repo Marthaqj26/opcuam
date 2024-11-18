@@ -319,30 +319,19 @@ impl Subscriptions {
             let request_timestamp: DateTimeUtc = request_header.timestamp.into();
 
              let current_time = now.time();
-             let request_time = request_timestamp.time();
-
-            println!(
-        "Hora actual (now): {:?}, Hora del request: {:?}",
-        current_time, request_time
-    );
+             let request_time = request_timestamp.time();           
             
             let publish_request_timeout = Duration::from_millis(if request_header.timeout_hint > 0 && (request_header.timeout_hint as i64) < publish_request_timeout {
                 request_header.timeout_hint as u64
             } else {
                 publish_request_timeout as u64
             });
-
-            println!("publish_request timeout: {:?}", publish_request_timeout);
+           
             // The request has timed out if the timestamp plus hint exceeds the input time
             // TODO unwrap logic needs to change
            let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap_or(Duration::from_secs(0));  
             //let signed_duration_since: Duration = now.signed_duration_since(request_timestamp).to_std().unwrap();  
-
-           // let max_tolerance = Duration::from_secs(5);
-           //let signed_duration_since = match now.signed_duration_since(request_timestamp).to_std() {
-            //    Ok(duration) => duration,
-             //   Err(_) => max_tolerance,
-            //};
+          
             
              println!("singed_duratin_since: {:?}", signed_duration_since);
                if signed_duration_since > publish_request_timeout{
